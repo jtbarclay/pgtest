@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgtest
+  namespace: pgtest
+  labels:
+    app: pgtest-server
+spec:
+  type: ClusterIP
+  selector:
+    app: pgtest-server
+  ports:
+    - protocol: TCP
+      name: http
+      port: 5000
+      targetPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgtest-server
+  namespace: pgtest
+  labels:
+    app: pgtest-server
+  annotations:
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgtest-server
+  template:
+    metadata:
+      labels:
+        app: pgtest-server
+    spec:
+      containers:
+        - name: pgtest-server
+          image: jtbarclay/pgtest:latest
+          ports:
+            - containerPort: 5000
+          env:
+          - name: KUBE_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: pgtest-secret
+                key: KUBE_DB_HOST
+          - name: KUBE_DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: pgtest-secret
+                key: KUBE_DB_USER
+          - name: KUBE_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pgtest-secret
+                key: KUBE_DB_PASSWORD
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: pgtest-server
+  namespace: pgtest
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+    - host: pgtest.jtbarclay.dev
+      http:
+        paths:
+          - backend:
+              serviceName: pgtest
+              servicePort: 5000
+            path: /
+  tls:
+    - hosts:
+        - pgtest.jtbarclay.dev
+      secretName: pgtest-jtbarclay-dev-tls
