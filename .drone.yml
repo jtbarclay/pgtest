@@ -22,10 +22,10 @@ steps:
       from_secret: k3s_cert
     kubernetes_token:
       from_secret: k3s_token
-    deployment: haldane-server
-    repo: jtbarclay/haldane
-    container: haldane-server
-    namespace: drone
+    deployment: pgtest-server
+    repo: jtbarclay/pgtest
+    container: pgtest-server
+    namespace: pgtest
     tag:                 
       - ${DRONE_COMMIT_SHA:0:7}
 
