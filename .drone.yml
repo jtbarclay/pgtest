@@ -13,9 +13,6 @@ steps:
     repo: jtbarclay/pgtest
     tags: ["${DRONE_COMMIT_SHA:0:7}", "latest"]
 
-node_selector:
-  kubernetes.io/arch: arm64
-
 - name: deploy
   image: jtbarclay/drone-kubernetes:latest
   settings:
@@ -31,3 +28,6 @@ node_selector:
     namespace: drone
     tag:                 
       - ${DRONE_COMMIT_SHA:0:7}
+
+node_selector:
+  kubernetes.io/arch: arm64
